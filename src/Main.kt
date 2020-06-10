@@ -1,0 +1,85 @@
+import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.file
+import fs.HDDFsImage
+import logger.ConsoleLogger
+import utils.blocksToMpgSize
+import utils.format
+import java.io.File
+import kotlin.system.exitProcess
+
+const val VERSION = 0.1
+
+@Suppress("SpellCheckingInspection")
+class Main : CliktCommand(printHelpOnEmptyArgs = true) {
+
+    private val input: File by option("-i", "--input", envvar = "HDDFS_DUMP_IN", help = "HDDFs Image").file(
+        mustExist = true,
+        canBeFile = true,
+        canBeDir = false
+    ).required()
+
+    private val output: File by option("-o", "--output", envvar = "HDDFS_DUMP_OUT", help = "MPG output directory").file(
+        mustExist = false,
+        canBeFile = false,
+        canBeDir = true
+    ).required()
+
+    override fun run() {
+        intro()
+
+        val pathToFile = input.toString()
+        val outPath = output.toString()
+
+        val hddfs = loadHDDFSImage(pathToFile)
+        checkValidHDDFs(hddfs)
+
+        val mpgPosition = hddfs.findMpgSectionPosition().also {
+            println("MPG sector found at: ${it.first}, length: ${it.second} ")
+        }
+
+        val mpgBlocks = getMPGBlockCount(hddfs, mpgPosition)
+
+        println("Extracting to \"$outPath\"...")
+        hddfs.extractAllMpgs(outPath, mpgPosition, ConsoleLogger(mpgBlocks))
+    }
+
+    private fun intro() {
+        println("\nHDDFs MPG Dumper v$VERSION by Manuel S. Caspari, June 2020")
+        println("Bitcoin: 1Ju9G5U4iwJekRvUnG1JDme11vjxJ889Ux")
+        println("Ethereum: 0xa9981a33f6b1A18da5Db58148B2357f22B44e1e0")
+        println("Tip me a beer if you like this tool :)\n")
+        println("Licences: ")
+        println("- Clikt, Copyright 2018-2020 AJ Alt, Apache License Version 2.0 (https://github.com/ajalt/clikt)")
+        println("- Progressbar, Copyright 2015-2020 Tongfei Chen, The MIT License (https://github.com/ctongfei/progressbar)\n")
+    }
+
+    private fun getMPGBlockCount(hddfs: HDDFsImage, mpgPosition: Pair<UInt, UInt>): Long {
+        print("Analysing MPG sector (this might take a while)... ")
+        val mpgBlocks = hddfs.getMpgBlockCount(mpgPosition)
+        val mpgSize = mpgBlocks.blocksToMpgSize
+        println("OK")
+        println("Found ${mpgSize.toULong().format()} bytes of MPG data (Blocks: $mpgBlocks)\n")
+        return mpgBlocks
+    }
+
+    private fun loadHDDFSImage(pathToFile: String): HDDFsImage {
+        print("Reading \"$pathToFile\"... ")
+        return HDDFsImage(pathToFile).also {
+            println("OK")
+        }
+    }
+
+    private fun checkValidHDDFs(hddfs: HDDFsImage) {
+        print("Check for HDDFs file system... ")
+        if (!hddfs.isValidHDDFs()) {
+            println("NOK")
+            println("No valid HDDFs Image found")
+            exitProcess(-1)
+        }
+        println("OK")
+    }
+}
+
+fun main(args: Array<String>) = Main().main(args)
