@@ -1,6 +1,6 @@
 # HDDFs 00.07 MPG Dumper
 
-[![HDDFs MPG Dumper](assets/screenshot_01.png)
+![HDDFs MPG Dumper](assets/screenshot_01.png)
 
 ## What is HDDFs
 HDDFs is a file system that shipped with some VCR receivers. There's no real documentation
@@ -14,7 +14,7 @@ Then extract your MPGs by running
 ```
 java -jar hddfsdump.jar --input ./hddfs.bin --output ./mpg-out/
 ```
-
+  
 | Params  | Default | Description | Environment Var |
 | ------------- | ------------- | ------------- | ------------- |
 | --input   | | Specifies the input file  | HDDFS_DUMP_IN
@@ -28,7 +28,7 @@ java -jar hddfsdump.jar --input ./hddfs.bin --output ./mpg-out/
 * [Clikt](https://github.com/ajalt/clikt) Copyright 2018-2020 AJ Alt, Apache License Version 2.0  
 * [Progressbar](https://github.com/ctongfei/progressbar) Copyright 2015-2020 Tongfei Chen, The MIT License  
   
-# Thanks to
+## Thanks to
 Thanks to the guys over at avsforum who dealt with the same issue around 10 years ago.  
 Especially to PeterTheGeek for documenting his findings on HDDFs  
 https://www.avsforum.com/forum/106-dvd-recorders-standard-def/1277209-hard-disk-file-system-investigation-magnavox-537-535-533-515-513-2160a-2160-2080-philips-3576-3575-a.html
