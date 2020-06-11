@@ -74,7 +74,7 @@ class MpgScratcher(
 
                 // Protect against ghost data (VCR overrides previously deleted mpg)
                 // Ignore those sudden sequence jumps if allowSequenceJumps is not set
-                val margin = lastGap + (lastGap * 4u).toUInt()
+                val margin = lastGap + (lastGap * 6u).toUInt()
                 val changeToNow = sequenceNumber - lastSequence
                 if(!isMpgBlock || isSequenceSequential(changeToNow, margin) || allowSequenceJumps){
                     if(debug){
