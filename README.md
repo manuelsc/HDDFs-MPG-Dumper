@@ -14,6 +14,15 @@ Then extract your MPGs by running
 ```
 java -jar hddfsdump.jar --input ./hddfs.bin --output ./mpg-out/
 ```
+
+| Params  | Default | Description | Environment Var |
+| ------------- | ------------- | ------------- | ------------- |
+| --input   | | Specifies the input file  | HDDFS_DUMP_IN
+| --output  | | Specifies the output directory for the final MPGs  | HDDFS_DUMP_OUT
+| --no-mpg-cleanup | false | Cleaning up MPGs means skipping non sequential blocks. Some VCRs simply override deleted MPGs with new ones, resulting in an overlap at the end of the mpg. If you encounter issues with the cleanup you can use this option to disable it.  | HDDFS_DUMP_NO_CLEANUP
+| --recover  | false | Dump even deleted data. You might want to use this in combination with --no-mpg-cleanup  | HDDFS_DUMP_RECOVER
+| --debug  | false | Dont write to disk, debug output on console  | HDDFS_DUMP_DEBUG
+  
   
 ## Dependencies:
 * [Clikt](https://github.com/ajalt/clikt) Copyright 2018-2020 AJ Alt, Apache License Version 2.0  

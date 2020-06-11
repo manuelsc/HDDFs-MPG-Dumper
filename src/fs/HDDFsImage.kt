@@ -2,10 +2,10 @@ package fs
 
 import logger.ProgressLogger
 import utils.sectorAsPosition
-import utils.toUInt32
+import utils.toUInt32LittleEndian
 
 @Suppress("MemberVisibilityCanBePrivate")
-class HDDFsImage(pathToFile: String) : FileSeeker(pathToFile) {
+class HDDFsImage(pathToFile: String, private val debug: Boolean) : FileSeeker(pathToFile) {
 
     fun getSignatureSector() = readBytes(HDDFs.SYSCTR.first, HDDFs.SYSCTR.second.toInt())
 
@@ -35,24 +35,24 @@ class HDDFsImage(pathToFile: String) : FileSeeker(pathToFile) {
         check(rawRelativePosition != -1) { "Could not locate MPG position" }
 
         val absolutePosition = rawRelativePosition - HDDFs.MPG_LOCATION_OFFSET_TO_NAME + HDDFs.FB000.first - 1
-        val mpgStart = readBytes(absolutePosition, 4).toUInt32()
-        val mpgLength = readBytes(absolutePosition + 4, 4).toUInt32()
+        val mpgStart = readBytes(absolutePosition, 4).toUInt32LittleEndian()
+        val mpgLength = readBytes(absolutePosition + 4, 4).toUInt32LittleEndian()
 
         return Pair(mpgStart, mpgLength)
     }
 
     /**
-     * Skipping through MPG_ALLOC_BLOCKS and see if we read empty (zero) bytes
+     * Skipping through MPG_ALLOC_BLOCK_SECTORS_ANALYSE and see if we read empty (zero) bytes
      * @param position sector position + length of MPG sector (can be retrieved by calling [findMpgSectionPosition])
-     * @return last block number with non empty data
+     * @return last block number with non empty data (approximation for speed)
      */
     fun getMpgBlockCount(position: Pair<UInt, UInt>): Long {
-        for (i in 0 until position.second.toInt() / HDDFs.MPG_ALLOC_BLOCK_SECTORS) {
-            val absolutePosition = (position.first.toLong() + (i * HDDFs.MPG_ALLOC_BLOCK_SECTORS)).sectorAsPosition
+        for (i in 0 until position.second.toInt() / HDDFs.MPG_ALLOC_BLOCK_SECTORS_ANALYSE) {
+            val absolutePosition = (position.first.toLong() + (i * HDDFs.MPG_ALLOC_BLOCK_SECTORS_ANALYSE)).sectorAsPosition
             val chunk = readBytes(absolutePosition, HDDFs.EMPTY.size)
-            if (HDDFs.EMPTY.findIn(chunk, 0)) return (i - 1L)
+            if (HDDFs.EMPTY.findIn(chunk, 0)) return (i - 1L) * (HDDFs.MPG_ALLOC_BLOCK_SECTORS_ANALYSE / HDDFs.MPG_ALLOC_BLOCK_SECTORS)
         }
-        return position.second.toLong()
+        return position.second.toLong() / HDDFs.MPG_ALLOC_BLOCK_SECTORS
     }
 
     /**
@@ -61,8 +61,8 @@ class HDDFsImage(pathToFile: String) : FileSeeker(pathToFile) {
      * @param position sector position + length of MPG sector (can be retrieved with [findMpgSectionPosition])
      * @param logger used only for progress bar, can be retrieved by calling [getMpgBlockCount]
      */
-    fun extractAllMpgs(outPath: String, position: Pair<UInt, UInt>, logger: ProgressLogger) {
-        MpgScratcher(this, position, logger).extractTo(outPath)
+    fun extractAllMpgs(outPath: String, position: Pair<UInt, UInt>, logger: ProgressLogger, allowSequenceJumps: Boolean, recover: Boolean) {
+        MpgScratcher(this, position, logger, allowSequenceJumps, recover, debug).extractTo(outPath)
     }
 
     companion object {

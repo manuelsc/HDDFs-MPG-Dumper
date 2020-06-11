@@ -4,10 +4,12 @@ import utils.sectorAsPosition
 
 object HDDFs {
 
-    /** MPG Allocation Block Size (MPGs are stored in ~8MB Blocks) **/
-    const val MPG_ALLOC_BLOCK_SECTORS = 16384L
+    /** MPG Allocation Block Size (MPGs are stored in Blocks) **/
+    const val MPG_ALLOC_BLOCK_SECTORS = 512L
 
-    /** Same as MPG_ALLOC_BLOCK_SECTORS only in bytes instead of sectors. ~8MB **/
+    const val MPG_ALLOC_BLOCK_SECTORS_ANALYSE = 8192L
+
+    /** Same as MPG_ALLOC_BLOCK_SECTORS only in bytes instead of sectors.**/
     val MPG_ALLOC_BLOCK_SIZE = MPG_ALLOC_BLOCK_SECTORS.sectorAsPosition
 
     /** Contains the HDDFs signature that is found in SYSCTR  **/
@@ -19,7 +21,10 @@ object HDDFs {
     /** HDD Sector size in bytes **/
     const val HDD_SECTOR_SIZE = 512
 
-    /** This signature starts after the MPG Signature (00 00 01 BA) and signals a new file start **/
+    /** MPG Signature **/
+    val MPG_SIGNATURE = byteArrayOf(0x00.toByte(), 0x00.toByte(), 0x01.toByte(), 0xBA.toByte())
+
+    /** This signature starts after the MPG_SIGNATURE (00 00 01 BA) and signals a new file start **/
     val MPG_NEW_SIGNATURE = byteArrayOf(0x44, 0x00, 0x04, 0x00, 0x04, 0x01)
 
     /** Empty array, used to check whether we reached end of MPG data **/

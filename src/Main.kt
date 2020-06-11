@@ -1,15 +1,18 @@
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
+import fs.HDDFs
 import fs.HDDFsImage
 import logger.ConsoleLogger
+import logger.EmptyLogger
 import utils.blocksToMpgSize
 import utils.format
 import java.io.File
 import kotlin.system.exitProcess
 
-const val VERSION = 0.1
+const val VERSION = 0.2
 
 @Suppress("SpellCheckingInspection")
 class Main : CliktCommand(printHelpOnEmptyArgs = true) {
@@ -26,23 +29,46 @@ class Main : CliktCommand(printHelpOnEmptyArgs = true) {
         canBeDir = true
     ).required()
 
+    private val debug: Boolean by option(
+        "--debug", envvar = "HDDFS_DUMP_DEBUG",
+        help = "Dont write to disk, debug output on console"
+    ).flag(default = false)
+
+    private val noMpgCleanup: Boolean by option(
+        "--no-mpg-cleanup", envvar = "HDDFS_DUMP_NO_CLEANUP",
+        help = "Cleaning up MPGs means skipping non sequential blocks. " +
+                "Some VCRs simply override deleted MPGs with new ones, resulting in an overlap at the end of the mpg." +
+                "If you encounter issues with the cleanup you can use this option to disable it."
+    ).flag(default = false)
+
+    private val recover: Boolean by option(
+        "--recover", envvar = "HDDFS_DUMP_RECOVER",
+        help = "Dump even deleted data. You might want to use this in combination with --no-mpg-cleanup"
+    ).flag(default = false)
+
     override fun run() {
         intro()
 
         val pathToFile = input.toString()
         val outPath = output.toString()
 
-        val hddfs = loadHDDFSImage(pathToFile)
+        val hddfs = loadHDDFSImage(pathToFile, debug)
         checkValidHDDFs(hddfs)
 
         val mpgPosition = hddfs.findMpgSectionPosition().also {
             println("MPG sector found at: ${it.first}, length: ${it.second} ")
         }
 
-        val mpgBlocks = getMPGBlockCount(hddfs, mpgPosition)
+        val mpgBlocks = getMPGBlockCount(hddfs, mpgPosition, recover)
 
-        println("Extracting to \"$outPath\"...")
-        hddfs.extractAllMpgs(outPath, mpgPosition, ConsoleLogger(mpgBlocks))
+        println("Extracting to \"$outPath\"${ if(noMpgCleanup) " (no cleanup)" else "" }...")
+        hddfs.extractAllMpgs(
+            outPath,
+            mpgPosition,
+            if (debug) EmptyLogger(mpgBlocks) else ConsoleLogger(mpgBlocks),
+            noMpgCleanup,
+            recover
+        )
     }
 
     private fun intro() {
@@ -55,18 +81,24 @@ class Main : CliktCommand(printHelpOnEmptyArgs = true) {
         println("- Progressbar, Copyright 2015-2020 Tongfei Chen, The MIT License (https://github.com/ctongfei/progressbar)\n")
     }
 
-    private fun getMPGBlockCount(hddfs: HDDFsImage, mpgPosition: Pair<UInt, UInt>): Long {
+    private fun getMPGBlockCount(hddfs: HDDFsImage, mpgPosition: Pair<UInt, UInt>, recover: Boolean): Long {
         print("Analysing MPG sector (this might take a while)... ")
-        val mpgBlocks = hddfs.getMpgBlockCount(mpgPosition)
+
+        val mpgBlocks = if(recover){
+            mpgPosition.second.toLong() / HDDFs.MPG_ALLOC_BLOCK_SECTORS
+        } else {
+            hddfs.getMpgBlockCount(mpgPosition)
+        }
         val mpgSize = mpgBlocks.blocksToMpgSize
+
         println("OK")
         println("Found ${mpgSize.toULong().format()} bytes of MPG data (Blocks: $mpgBlocks)\n")
         return mpgBlocks
     }
 
-    private fun loadHDDFSImage(pathToFile: String): HDDFsImage {
+    private fun loadHDDFSImage(pathToFile: String, debug: Boolean): HDDFsImage {
         print("Reading \"$pathToFile\"... ")
-        return HDDFsImage(pathToFile).also {
+        return HDDFsImage(pathToFile, debug).also {
             println("OK")
         }
     }
