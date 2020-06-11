@@ -12,7 +12,7 @@ import utils.format
 import java.io.File
 import kotlin.system.exitProcess
 
-const val VERSION = 0.2
+const val VERSION = "0.21"
 
 @Suppress("SpellCheckingInspection")
 class Main : CliktCommand(printHelpOnEmptyArgs = true) {
