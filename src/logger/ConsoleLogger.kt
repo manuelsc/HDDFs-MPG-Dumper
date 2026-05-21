@@ -1,15 +1,20 @@
 package logger
 
 import me.tongfei.progressbar.ProgressBar
+import me.tongfei.progressbar.ProgressBarBuilder
 import me.tongfei.progressbar.ProgressBarStyle
 
 class ConsoleLogger(sectorCount: Long): ProgressLogger {
 
-    private val pb = ProgressBar("Extracting MPGs", sectorCount, ProgressBarStyle.ASCII)
+    private val pb = ProgressBarBuilder()
+        .setTaskName("Extracting MPGs")
+        .setInitialMax(sectorCount)
+        .setStyle(ProgressBarStyle.ASCII)
+        .build()
 
     override fun progress(sectorsWritten: Long, additional: String?) {
         pb.stepTo(sectorsWritten)
-        if(additional != null) pb.extraMessage = additional
+        if(additional != null) pb.setExtraMessage(additional)
     }
 
     override fun error(msg: String, e: Exception?){

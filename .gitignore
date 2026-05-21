@@ -1,3 +1,5 @@
 .idea
 out/
 HDDFsDumper.iml
+.gradle/
+build/

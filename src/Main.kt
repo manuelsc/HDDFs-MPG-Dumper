@@ -12,7 +12,7 @@ import utils.format
 import java.io.File
 import kotlin.system.exitProcess
 
-const val VERSION = "0.21"
+const val VERSION = "0.22"
 
 @Suppress("SpellCheckingInspection")
 class Main : CliktCommand(printHelpOnEmptyArgs = true) {
@@ -72,10 +72,7 @@ class Main : CliktCommand(printHelpOnEmptyArgs = true) {
     }
 
     private fun intro() {
-        println("\nHDDFs MPG Dumper v$VERSION by Manuel S. Caspari, June 2020")
-        println("Bitcoin: 1Ju9G5U4iwJekRvUnG1JDme11vjxJ889Ux")
-        println("Ethereum: 0xa9981a33f6b1A18da5Db58148B2357f22B44e1e0")
-        println("Tip me a beer if you like this tool :)\n")
+        println("\nHDDFs MPG Dumper v$VERSION by Manuel S. Caspari, 2020-2026\n")
         println("Licences: ")
         println("- Clikt, Copyright 2018-2020 AJ Alt, Apache License Version 2.0 (https://github.com/ajalt/clikt)")
         println("- Progressbar, Copyright 2015-2020 Tongfei Chen, The MIT License (https://github.com/ctongfei/progressbar)\n")
