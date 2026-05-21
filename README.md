@@ -7,6 +7,22 @@ HDDFs is a file system that shipped with some VCR receivers. There's no real doc
 on how it operates which is why I created this little tool. It allows you
 to dump your VHS converted videos from the HDD.  
   
+## Building
+
+**Prerequisites:** JDK 8 or newer (Java must be on your PATH).
+
+Clone the repo and run the Gradle wrapper — it will download Gradle and all dependencies automatically:
+
+```bash
+# Linux / macOS
+./gradlew shadowJar
+
+# Windows
+gradlew.bat shadowJar
+```
+
+The fat JAR is written to `build/libs/hddfsdump.jar`.
+
 ## Usage
 First create an image from your HDD with a tool like dd.
   
@@ -33,14 +49,10 @@ Thanks to the guys over at avsforum who dealt with the same issue around 10 year
 Especially to PeterTheGeek for documenting his findings on HDDFs  
 https://www.avsforum.com/forum/106-dvd-recorders-standard-def/1277209-hard-disk-file-system-investigation-magnavox-537-535-533-515-513-2160a-2160-2080-philips-3576-3575-a.html
   
-## Donations / Support
-Ethereum: 0xa9981a33f6b1A18da5Db58148B2357f22B44e1e0  
-Bitcoin: 1Ju9G5U4iwJekRvUnG1JDme11vjxJ889Ux  
-  
 ## Licence
     The MIT License (MIT)
 
-    Copyright 2020-2020 Manuel S. Caspari
+    Copyright 2020-2026 Manuel S. Caspari
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
