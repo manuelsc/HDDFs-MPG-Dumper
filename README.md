@@ -28,7 +28,7 @@ First create an image from your HDD with a tool like dd.
   
 Then extract your MPGs by running  
 ```
-java -jar hddfsdump.jar --input ./hddfs.bin --output ./mpg-out/
+java -jar HDDFsTool-all.jar --input ./hddfs.bin --output ./mpg-out/
 ```
   
 | Params  | Default | Description | Environment Var |
